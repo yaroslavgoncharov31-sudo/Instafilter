@@ -1,33 +1,35 @@
+import PhotosUI
 import SwiftUI
+import CoreImage
+import CoreImage.CIFilterBuiltins
 
 struct ContentView: View {
-    @State private var processedImage: Image?
-    @State private var filterIntensity = 0.5
+    @State private var viewModel = ContentViewModel()
 
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             VStack {
                 Spacer()
-
-                if let processedImage {
-                    processedImage
-                        .resizable()
-                        .scaledToFit()
-                } else {
-                    ContentUnavailableView("No picture", systemImage: "photo.badge.plus", description: Text("Tap to import a photo"))
+                PhotosPicker(selection: $viewModel.selectedItem) {
+                    if let processedImage = viewModel.processedImage {
+                        processedImage
+                            .resizable()
+                            .scaledToFit()
+                    } else {
+                        ContentUnavailableView("No picture", systemImage: "photo.badge.plus", description: Text("Tap to import a photo"))
+                    }
                 }
-
+                .buttonStyle(.plain)
                 Spacer()
 
                 HStack {
                     Text("Intensity")
-                    Slider(value: $filterIntensity)
+                    Slider(value: $viewModel.filterIntensity)
                 }
                 HStack {
                     Button("Change filter") {
-
+                        
                     }
-
                     Spacer()
                 }
             }
@@ -36,7 +38,6 @@ struct ContentView: View {
         }
     }
 }
-
 #Preview {
     ContentView()
 }
