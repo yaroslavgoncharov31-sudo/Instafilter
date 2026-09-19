@@ -35,3 +35,12 @@ struct ImageProcessor {
         return Image(uiImage: UIImage(cgImage: cgImage))
     }
 }
+extension ImageProcessor {
+    func rotated(_ image: CIImage, by quarterTurns: Int) -> CIImage {
+        let normalized = ((quarterTurns % 4) + 4) % 4 
+        guard normalized != 0 else { return image }
+
+        let radians = CGFloat(normalized) * (.pi / 2)
+        return image.transformed(by: CGAffineTransform(rotationAngle: radians))
+    }
+}
