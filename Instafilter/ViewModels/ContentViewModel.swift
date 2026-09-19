@@ -14,6 +14,12 @@ class ContentViewModel {
     private let imageProcessor = ImageProcessor()
     private let context = CIContext()
 
+    let availableFilters = FilterOption.allCases
+
+    func selectFilter(_ option: FilterOption) {
+        currentFilter = option.filter
+    }
+
     private func loadImage() async {
         beginImage = try? await imageProcessor.loadImage(item: selectedItem)
         reprocess()
@@ -27,5 +33,9 @@ class ContentViewModel {
             filterIntensity: filterIntensity,
             context: context
         )
+    }
+    private func setFilter(_ filter: CIFilter) async {
+        currentFilter = filter
+        await loadImage()
     }
 }
