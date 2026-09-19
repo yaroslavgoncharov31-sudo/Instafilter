@@ -41,6 +41,7 @@ struct ContentView: View {
                     Button(option.name) {
                         viewModel.selectFilter(option)
                     }
+                    Button("Cancel", role: .cancel) { }
                 }
             }
         }
