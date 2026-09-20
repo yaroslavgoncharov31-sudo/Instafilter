@@ -7,6 +7,7 @@ import CoreImage.CIFilterBuiltins
 struct ContentView: View {
     @State private var viewModel = ContentViewModel()
     @State private var showingFilters = false
+
     @Environment(\.requestReview) private var requestReview
 
     var body: some View {
@@ -25,45 +26,50 @@ struct ContentView: View {
                 .buttonStyle(.plain)
                 Spacer()
 
-                HStack(spacing: 30) {
-                    Button {
-                        viewModel.rotateCounterClockwise()
-                    } label: {
-                        Image(systemName: "rotate.left")
+                VStack {
+                    HStack(spacing: 30) {
+                        Button {
+                            viewModel.rotateCounterClockwise()
+                        } label: {
+                            Image(systemName: "rotate.left")
+                        }
+                        Button {
+                            viewModel.rotateClockwise()
+                        } label: {
+                            Image(systemName: "rotate.right")
+                        }
                     }
-                    Button {
-                        viewModel.rotateClockwise()
-                    } label: {
-                        Image(systemName: "rotate.right")
-                    }
-                }
-                .font(.title)
-                .padding(.bottom)
+                    .font(.title)
+                    .padding(.bottom)
 
-                HStack {
-                    Text("Intensity")
-                    Slider(value: $viewModel.filterIntensity)
-                }
-                HStack {
-                    Button("Change filter") {
-                        showingFilters = true
+
+                    HStack {
+                        Text("Intensity")
+                        Slider(value: $viewModel.filterIntensity)
                     }
-                    .confirmationDialog("Select a filter", isPresented: $showingFilters) {
-                        ForEach(viewModel.availableFilters, id: \.id) { option in
-                            Button(option.name) {
-                                viewModel.selectFilter(option)
-                                if viewModel.shouldRequestReview {
-                                    requestReview()
+                    HStack {
+                        Button("Change filter") {
+                            showingFilters = true
+                        }
+                        .confirmationDialog("Select a filter", isPresented: $showingFilters) {
+                            ForEach(viewModel.availableFilters, id: \.id) { option in
+                                Button(option.name) {
+                                    viewModel.selectFilter(option)
+                                    if viewModel.shouldRequestReview {
+                                        requestReview()
+                                    }
                                 }
                             }
+                            Button("Cancel", role: .cancel) { }
                         }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                    Spacer()
-                    if let processedImage = viewModel.processedImage {
-                        ShareLink(item: processedImage, preview: SharePreview("Instafilter image", image: processedImage))
+                        Spacer()
+                        if let processedImage = viewModel.processedImage {
+                            ShareLink(item: processedImage, preview: SharePreview("Instafilter image", image: processedImage))
+                        }
                     }
                 }
+                .disabled(viewModel.processedImage == nil)
+
             }
             .padding([.horizontal, .bottom])
             .navigationTitle("Instafilter")
