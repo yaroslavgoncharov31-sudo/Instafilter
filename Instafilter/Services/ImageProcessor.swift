@@ -21,7 +21,7 @@ struct ImageProcessor {
             currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey)
         }
         if inputKeys.contains(kCIInputRadiusKey) {
-            currentFilter.setValue(filterIntensity * minSide * 0.5, forKey: kCIInputRadiusKey)
+            currentFilter.setValue(filterIntensity * minSide * 0.8, forKey: kCIInputRadiusKey)
         }
         if inputKeys.contains(kCIInputScaleKey) {
             currentFilter.setValue(1 + filterIntensity * (minSide * 0.05), forKey: kCIInputScaleKey)
