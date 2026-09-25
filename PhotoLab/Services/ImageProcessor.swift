@@ -3,17 +3,29 @@ import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
-struct ImageProcessor {
-    func loadImage(item: PhotosPickerItem?) async throws -> CIImage? {
-            guard let imageData = try await item?.loadTransferable(type: Data.self) else { return nil }
-            guard let inputImage = UIImage(data: imageData) else  { return nil }
+actor ImageProcessor {
+    private let context = CIContext()
 
-            return CIImage(image: inputImage)
+    func loadImage(item: PhotosPickerItem?) async throws -> CIImage? {
+        guard let imageData = try await item?.loadTransferable(type: Data.self) else { return nil }
+        guard let inputImage = UIImage(data: imageData) else { return nil }
+        return CIImage(image: inputImage)
     }
-    func applyProcessing(to beginImage: CIImage, currentFilter: CIFilter, filterIntensity: Double, context: CIContext) -> Image? {
-        currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
+
+    func applyProcessing(
+        to beginImage: CIImage,
+        option: FilterOption,
+        filterIntensity: Double,
+        rotationQuarterTurns: Int
+    ) async -> Image? {
+        guard !Task.isCancelled else { return nil }
+
+        let rotatedImage = rotated(beginImage, by: rotationQuarterTurns)
+        let currentFilter = await option.filter
+        currentFilter.setValue(rotatedImage, forKey: kCIInputImageKey)
+
         let inputKeys = currentFilter.inputKeys
-        let extent = beginImage.extent
+        let extent = rotatedImage.extent
         let imageCenter = CGPoint(x: extent.midX, y: extent.midY)
         let minSide = min(extent.width, extent.height)
 
@@ -30,16 +42,15 @@ struct ImageProcessor {
             currentFilter.setValue(CIVector(cgPoint: imageCenter), forKey: kCIInputCenterKey)
         }
 
+        guard !Task.isCancelled else { return nil }
         guard let outputImage = currentFilter.outputImage else { return nil }
         guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else { return nil }
         return Image(uiImage: UIImage(cgImage: cgImage))
     }
-}
-extension ImageProcessor {
-    func rotated(_ image: CIImage, by quarterTurns: Int) -> CIImage {
-        let normalized = ((quarterTurns % 4) + 4) % 4 
-        guard normalized != 0 else { return image }
 
+    private func rotated(_ image: CIImage, by quarterTurns: Int) -> CIImage {
+        let normalized = ((quarterTurns % 4) + 4) % 4
+        guard normalized != 0 else { return image }
         let radians = CGFloat(normalized) * (.pi / 2)
         return image.transformed(by: CGAffineTransform(rotationAngle: radians))
     }
